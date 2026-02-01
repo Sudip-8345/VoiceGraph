@@ -1,0 +1,7 @@
+gradio
+openai-whisper
+edge-tts
+langchain-groq
+langchain-google-genai
+langchain-core
+python-dotenv

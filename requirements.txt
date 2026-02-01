@@ -1,0 +1,33 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Frontend
+gradio
+
+# Speech-to-Text
+openai-whisper
+SpeechRecognition
+
+# Text-to-Speech
+edge-tts
+gTTS
+
+# LLM & Orchestration
+langchain-groq
+langgraph
+langchain-core
+
+# Audio Processing
+pydub
+soundfile
+numpy
+
+# Configuration
+python-dotenv
+pydantic
+pydantic-settings
+
+# Async
+aiofiles
