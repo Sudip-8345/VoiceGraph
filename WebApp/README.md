@@ -4,7 +4,7 @@ emoji: 🎙️
 colorFrom: blue
 colorTo: purple
 sdk: gradio
-sdk_version: "4.19.2"
+sdk_version: "5.9.1"
 python_version: "3.10"
 app_file: app.py
 pinned: false
@@ -12,4 +12,4 @@ pinned: false
 
 # 🎙️ VoiceBot
 
-Voice assistant powered by Whisper + Groq + Edge TTS
+Voice assistant powered by Groq + Edge TTS
