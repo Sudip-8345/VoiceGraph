@@ -5,8 +5,7 @@ load_dotenv()
 import gradio as gr
 import tempfile
 import asyncio
-import torch
-from transformers import pipeline
+import speech_recognition as sr
 import edge_tts
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -37,29 +36,24 @@ STYLE:
 - When asked personal questions, answer confidently from your persona"""
 
 # ============ State ============
-_whisper_pipe = None
+_recognizer = sr.Recognizer()
 _history = []
 
 
-# ============ STT (Whisper via Transformers) ============
-def load_whisper():
-    global _whisper_pipe
-    if _whisper_pipe is None:
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        _whisper_pipe = pipeline(
-            "automatic-speech-recognition",
-            model="openai/whisper-base",
-            device=device
-        )
-    return _whisper_pipe
-
-
+# ============ STT (Google Speech Recognition) ============
 def transcribe(audio_path):
     if not audio_path:
         return ""
-    pipe = load_whisper()
-    result = pipe(audio_path)
-    return result["text"].strip()
+    try:
+        with sr.AudioFile(audio_path) as source:
+            audio_data = _recognizer.record(source)
+            text = _recognizer.recognize_google(audio_data)
+            return text.strip()
+    except sr.UnknownValueError:
+        return ""
+    except sr.RequestError as e:
+        print(f"STT error: {e}")
+        return ""
 
 
 # ============ LLM (Groq + Google fallback) ============
