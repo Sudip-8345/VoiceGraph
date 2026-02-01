@@ -1,4 +1,4 @@
-# 🎙️ VoiceBot
+# 🎙️ VoiceGraph
 
 A production-ready voice bot with human-like conversational AI, built with FastAPI, Streamlit, Whisper, LangGraph, and Edge TTS.
 
