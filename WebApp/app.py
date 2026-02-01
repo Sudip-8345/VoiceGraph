@@ -5,7 +5,8 @@ load_dotenv()
 import gradio as gr
 import tempfile
 import asyncio
-import whisper
+import torch
+from transformers import pipeline
 import edge_tts
 from langchain_groq import ChatGroq
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -36,23 +37,28 @@ STYLE:
 - When asked personal questions, answer confidently from your persona"""
 
 # ============ State ============
-_whisper_model = None
+_whisper_pipe = None
 _history = []
 
 
-# ============ STT (Whisper) ============
+# ============ STT (Whisper via Transformers) ============
 def load_whisper():
-    global _whisper_model
-    if _whisper_model is None:
-        _whisper_model = whisper.load_model("base")
-    return _whisper_model
+    global _whisper_pipe
+    if _whisper_pipe is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        _whisper_pipe = pipeline(
+            "automatic-speech-recognition",
+            model="openai/whisper-base",
+            device=device
+        )
+    return _whisper_pipe
 
 
 def transcribe(audio_path):
     if not audio_path:
         return ""
-    model = load_whisper()
-    result = model.transcribe(audio_path, fp16=False)
+    pipe = load_whisper()
+    result = pipe(audio_path)
     return result["text"].strip()
 
 

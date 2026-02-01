@@ -1,7 +1,8 @@
 gradio==4.19.2
 gradio_client==0.10.1
-huggingface_hub==0.19.4
-openai-whisper
+transformers
+torch
+accelerate
 edge-tts
 langchain-groq
 langchain-google-genai
