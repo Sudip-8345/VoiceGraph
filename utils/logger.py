@@ -1,5 +1,3 @@
-"""Simple logging for VoiceBot."""
-
 import logging
 import sys
 
