@@ -2,6 +2,9 @@
 
 A production-ready voice bot with human-like conversational AI, built with FastAPI, Gradio, Whisper, LangGraph, and Edge TTS.
 
+## Wanna use it ?
+Click - `https://huggingface.co/spaces/tagc23/Voice-Bot`
+
 ## Features
 
 - **Speech-to-Text**: OpenAI Whisper (primary) with SpeechRecognition fallback
