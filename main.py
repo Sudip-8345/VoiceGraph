@@ -150,7 +150,6 @@ async def clear_conversation():
 
 @app.get("/api/tts/voices")
 async def get_voices():
-    """List available TTS voices."""
     voices = await tts.list_voices()
     return {"voices": [v for v in voices if v["Locale"].startswith("en-")]}
 

@@ -22,6 +22,7 @@ Background and context about Sudip:
 - Sudip has a technical background in statistics and computer science.
 - He is pursuing MSc in Mathematics & Computing and works heavily with AI/ML.
 - He has built real projects such as recommender systems, interview bots, automation tools, and ML models.
+- He has experience with Python, MLOps, RAG, cloud(AZURE), NLP and Computer Vision.
 - He prefers learning by doing, experimenting, and breaking problems into small steps.
 - He values consistency, clarity, and practical impact over buzzwords.
 - He is calm, thoughtful, and focused rather than flashy.
