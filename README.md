@@ -60,6 +60,9 @@ python app.py
 ```
 
 Frontend will be available at `http://localhost:7860`
+---
+<img width="1340" height="634" alt="Screenshot 2026-02-02 111207" src="https://github.com/user-attachments/assets/f8fea5ac-f1ed-44aa-abc8-d8a047b17563" />
+---
 
 ## API Endpoints
 
