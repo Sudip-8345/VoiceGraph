@@ -1,204 +1,114 @@
-# 🎙️ VoiceGraph
+# VoiceGraph
 
-A production-ready voice bot with human-like conversational AI, built with FastAPI, Streamlit, Whisper, LangGraph, and Edge TTS.
+A voice bot with conversational AI, built with FastAPI, Gradio, Whisper, LangGraph, and Edge TTS.
 
 ## Features
 
-- **Speech-to-Text**: OpenAI Whisper (primary) with SpeechRecognition fallback
-- **LLM**: OpenRouter API with customizable models
-- **Text-to-Speech**: Microsoft Edge TTS (primary) with gTTS fallback
-- **Orchestration**: LangGraph for reliable pipeline management
-- **API**: FastAPI with async support and comprehensive error handling
-- **Frontend**: Streamlit web interface for easy interaction
+- Speech-to-Text: Google Speech Recognition
+- LLM: Groq (primary) with Google Gemini fallback
+- Text-to-Speech: Microsoft Edge TTS
+- Orchestration: LangGraph for pipeline management
+- API: FastAPI backend
+- Frontend: Gradio web interface
 
 ## Architecture
 
 ```
-Audio Input → STT (Whisper) → LangGraph → LLM (OpenRouter) → TTS (Edge TTS) → Audio Output
+Audio Input -> STT -> LangGraph -> LLM -> TTS -> Audio Output
 ```
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Backend (FastAPI)
 
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate (Windows)
 venv\Scripts\activate
-
-# Activate (Linux/Mac)
-source venv/bin/activate
-
-# Install packages
 pip install -r requirements.txt
-```
-
-### 2. Configure Environment
-
-```bash
-# Copy example env file
-copy .env.example .env  # Windows
-# cp .env.example .env  # Linux/Mac
-
-# Edit .env and add your OpenRouter API key
-```
-
-### 3. Start the Backend
-
-```bash
 python main.py
 ```
 
-API will be available at `http://localhost:8000`
+API available at http://localhost:8000
 
-### 4. Start the Frontend
-
-```bash
-streamlit run app.py
-```
-
-Frontend will be available at `http://localhost:8501`
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/api/voice/process` | POST | Process audio → get audio response |
-| `/api/voice/process-with-text` | POST | Process audio → get JSON with text |
-| `/api/text/chat` | POST | Text input → audio response |
-| `/api/text/chat-text` | POST | Text input → text response |
-| `/api/conversation/clear` | POST | Clear conversation history |
-| `/api/tts/voices` | GET | List available TTS voices |
-
-## Usage Examples
-
-### cURL - Voice Processing
+### Web App (Gradio)
 
 ```bash
-curl -X POST "http://localhost:8000/api/voice/process" \
-  -F "audio=@recording.wav" \
-  -F "output_format=mp3" \
-  --output response.mp3
+cd WebApp
+pip install -r requirements.txt
+python app.py
 ```
 
-### cURL - Text Chat
+App available at http://localhost:7860
 
-```bash
-curl -X POST "http://localhost:8000/api/text/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"text": "Hello, how are you?", "output_format": "mp3"}' \
-  --output response.mp3
-```
+## Deployment
 
-### Python Client
+### Hugging Face Spaces
 
-```python
-import requests
+The WebApp is deployed on Hugging Face Spaces. Files needed:
+- app.py
+- requirements.txt
+- README.md (with YAML frontmatter)
+- packages.txt (for system dependencies like ffmpeg)
 
-# Voice processing
-with open("recording.wav", "rb") as f:
-    response = requests.post(
-        "http://localhost:8000/api/voice/process",
-        files={"audio": f},
-        data={"output_format": "mp3"}
-    )
-    with open("response.mp3", "wb") as out:
-        out.write(response.content)
+Live demo: https://huggingface.co/spaces/tagc23/Voice-Bot
 
-# Text chat
-response = requests.post(
-    "http://localhost:8000/api/text/chat-text",
-    json={"text": "What's the weather like?"}
-)
-print(response.json()["response_text"])
-```
+### CI/CD
 
-## Configuration
+GitHub Actions workflow automatically deploys to Hugging Face Spaces on push to main branch.
 
-### Environment Variables
+Setup:
+1. Add secrets in GitHub repo settings: HF_TOKEN, HF_USERNAME, HF_SPACE_NAME
+2. Push to main branch
+3. Workflow deploys WebApp folder to HF Spaces
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENROUTER_API_KEY` | Your OpenRouter API key | Required |
-| `OPENROUTER_MODEL` | LLM model to use | `meta-llama/llama-3.1-8b-instruct:free` |
-| `TTS_VOICE` | Edge TTS voice | `en-US-AriaNeural` |
-| `TTS_RATE` | Speech rate | `+0%` |
-| `MAX_AUDIO_DURATION_SECONDS` | Max input audio length | `60` |
-| `LOG_LEVEL` | Logging level | `INFO` |
+See `.github/workflows/deploy-to-hf.yml` for configuration.
 
-### Supported Audio Formats
+## Environment Variables
 
-**Input**: WAV (recommended), MP3, OGG, M4A, WebM, FLAC
+| Variable | Description |
+|----------|-------------|
+| GROQ_API_KEY | Groq API key |
+| GOOGLE_API_KEY | Google Gemini API key (fallback) |
+| OPENROUTER_API_KEY | OpenRouter Api Key
 
-**Output**: MP3, OGG (WhatsApp-ready), WAV
+## Challenges Faced
+
+### Hugging Face Spaces Dependency Conflicts
+
+The main challenge was `huggingface_hub` version conflicts. HF Spaces has a system-level `huggingface_hub` that cannot be overwritten by requirements.txt.
+
+Issues encountered:
+- `ImportError: cannot import name 'HfFolder' from 'huggingface_hub'` - This API was removed in newer versions
+- `split_torch_state_dict_into_shards` import error with transformers
+- Gradio version conflicts with gradio_client
+
+Solutions:
+- Removed explicit Gradio version from requirements.txt - let HF Spaces use its pre-installed version
+- Replaced openai-whisper with SpeechRecognition library to avoid huggingface_hub dependency
+- Used sdk_version in README.md YAML to specify Gradio version
+
+### Audio Component Bug
+
+Gradio 5.x had a JSON schema bug with Audio components (`TypeError: argument of type 'bool' is not iterable`). Fixed by using Gradio 6.x which is pre-installed on HF Spaces.
 
 ## Project Structure
 
 ```
 VoiceBot/
-├── .env.example        # Environment template
-├── requirements.txt    # Python dependencies
-├── config.py          # Configuration management
-├── main.py            # FastAPI backend
-├── app.py             # Streamlit frontend
-├── modules/
-│   ├── __init__.py
-│   ├── stt.py         # Speech-to-Text
-│   ├── tts.py         # Text-to-Speech
-│   ├── llm.py         # LLM client
-│   └── orchestrator.py # LangGraph pipeline
-└── utils/
-    ├── __init__.py
-    ├── logger.py      # Logging utilities
-    └── audio.py       # Audio processing
+├── main.py              # FastAPI backend
+├── config.py            # Configuration
+├── modules/             # STT, TTS, LLM, Orchestrator
+├── utils/               # Logger, Audio utilities
+├── WebApp/
+│   ├── app.py           # Gradio web app
+│   ├── requirements.txt
+│   ├── README.md        # HF Spaces config
+│   └── packages.txt     # System dependencies
+└── .github/
+    └── workflows/
+        └── deploy-to-hf.yml  # CI/CD workflow
 ```
-
-## Customization
-
-### Change Bot Personality
-
-Edit the `system_prompt` in [config.py](config.py) to customize the bot's personality and behavior.
-
-### Change TTS Voice
-
-Available voices can be listed via the API:
-
-```bash
-curl http://localhost:8000/api/tts/voices
-```
-
-Update `TTS_VOICE` in `.env` with your preferred voice.
-
-### Use Different LLM Model
-
-Browse available models at [OpenRouter](https://openrouter.ai/models) and update `OPENROUTER_MODEL` in `.env`.
-
-## WhatsApp Integration
-
-The bot outputs MP3/OGG audio compatible with WhatsApp. For WhatsApp integration:
-
-1. Use the `/api/voice/process` endpoint
-2. Set `output_format=ogg` for optimal WhatsApp compatibility
-3. Send the response audio via WhatsApp Business API
-
-## Troubleshooting
-
-### "Cannot connect to API"
-- Ensure the FastAPI backend is running (`python main.py`)
-- Check if port 8000 is available
-
-### "Speech recognition failed"
-- Ensure FFmpeg is installed for audio processing
-- Try using WAV format for input
-- Check audio quality and volume
-
-### "LLM API error"
-- Verify your OpenRouter API key is correct
-- Check your API credits/quota
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License
