@@ -1,8 +1,9 @@
+import os
 import gradio as gr
 import requests
 import tempfile
 
-API_URL = "http://localhost:8000"
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 
 # ============ API Functions ============
@@ -227,7 +228,7 @@ def create_app():
 if __name__ == "__main__":
     app = create_app()
     app.launch(
-        server_name="127.0.0.1",
+        server_name="0.0.0.0",
         server_port=7860,
-        share=False  # Set True to get public link
+        share=False
     )

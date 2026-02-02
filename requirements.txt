@@ -1,6 +1,6 @@
 # Web Framework
 fastapi
-uvicorn[standard]
+uvicorn
 python-multipart
 
 # Frontend

@@ -1,4 +1,5 @@
 import os
+import random
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from utils.logger import get_logger
@@ -8,6 +9,15 @@ logger = get_logger(__name__)
 
 # Chat history
 _history = []
+
+# Cached safe answers for fallback when LLM fails
+SAFE_ANSWERS = [
+    "I'm having a bit of trouble right now. Could you try asking again?",
+    "Sorry, I couldn't process that properly. Can you rephrase your question?",
+    "I'm experiencing some technical difficulties. Please try again in a moment.",
+    "Hmm, something went wrong on my end. Could you repeat that?",
+    "I apologize, but I'm having trouble responding right now. Please try again.",
+]
 
 
 def clear_history():
@@ -53,5 +63,6 @@ async def generate(message: str) -> str:
         return reply
         
     except Exception as e:
-        logger.error(f"LLM error: {e}")
-        raise RuntimeError(f"Failed to generate response: {e}")
+        logger.error(f"LLM error: {e}, using cached safe answer")
+        # Return a cached safe answer instead of failing
+        return random.choice(SAFE_ANSWERS)

@@ -24,6 +24,14 @@ async def stt_node(state: PipelineState) -> dict:
         text = await stt.transcribe(state["audio_input"], state.get("audio_format"))
         if not text:
             return {"error": "Could not transcribe audio"}
+        
+        # Handle low confidence - ask user to repeat
+        if text == "[LOW_CONFIDENCE]":
+            return {
+                "transcribed_text": "",
+                "llm_response": "I'm sorry, I didn't catch that clearly. Could you please repeat what you said?"
+            }
+        
         return {"transcribed_text": text}
     except Exception as e:
         logger.error(f"STT error: {e}")
@@ -63,6 +71,16 @@ def check_error(state: PipelineState) -> str:
     return "error" if state.get("error") else "ok"
 
 
+def check_stt_result(state: PipelineState) -> str:
+    """Check if STT needs LLM or can skip to TTS (low confidence case)."""
+    if state.get("error"):
+        return "error"
+    # If we already have an llm_response (low confidence case), skip to TTS
+    if state.get("llm_response"):
+        return "skip_llm"
+    return "ok"
+
+
 def build_pipeline():
     graph = StateGraph(PipelineState)
     
@@ -75,7 +93,7 @@ def build_pipeline():
     graph.set_entry_point("stt")
     
     # Add edges with error handling
-    graph.add_conditional_edges("stt", check_error, {"ok": "llm", "error": "error"})
+    graph.add_conditional_edges("stt", check_stt_result, {"ok": "llm", "skip_llm": "tts", "error": "error"})
     graph.add_conditional_edges("llm", check_error, {"ok": "tts", "error": "error"})
     graph.add_conditional_edges("tts", check_error, {"ok": END, "error": "error"})
     graph.add_edge("error", END)

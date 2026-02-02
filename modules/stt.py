@@ -28,8 +28,7 @@ async def _load_whisper(model_name: str = "base"):
     return _whisper_model
 
 
-async def transcribe_with_whisper(audio_path: str, model_name: str = "base") -> str:
-
+async def transcribe_with_whisper(audio_path: str, model_name: str = "base") -> tuple:
     model = await _load_whisper(model_name)
     
     result = await asyncio.to_thread(
@@ -38,7 +37,19 @@ async def transcribe_with_whisper(audio_path: str, model_name: str = "base") -> 
         fp16=False,
         language="en"
     )
-    return result.get("text", "").strip()
+    
+    text = result.get("text", "").strip()
+    
+    # Calculate confidence from segments
+    segments = result.get("segments", [])
+    if segments:
+        avg_logprob = sum(s.get("avg_logprob", -1) for s in segments) / len(segments)
+        # Convert log probability to confidence (0-1 scale, -1 is ~0.37, 0 is 1.0)
+        confidence = min(1.0, max(0.0, 1.0 + avg_logprob))
+    else:
+        confidence = 0.5 
+    
+    return text, confidence
 
 
 async def transcribe_with_google(audio_path: str) -> str:
@@ -58,13 +69,22 @@ async def transcribe_with_google(audio_path: str) -> str:
 async def transcribe(audio_data: bytes, format_hint: str = None) -> str:
     temp_path = None
     
+    # Confidence threshold - below this, ask user to repeat
+    CONFIDENCE_THRESHOLD = 0.4
+    
     try:
         temp_path = await save_to_temp_wav(audio_data, format_hint)
         
         # Try Whisper first
         try:
-            text = await transcribe_with_whisper(temp_path)
-            logger.info(f"Whisper: '{text[:50]}...'")
+            text, confidence = await transcribe_with_whisper(temp_path)
+            logger.info(f"Whisper: '{text[:50]}...' (confidence: {confidence:.2f})")
+            
+            # If confidence is too low, ask user to repeat
+            if confidence < CONFIDENCE_THRESHOLD and len(text) > 0:
+                logger.warning(f"Low confidence ({confidence:.2f}), asking to repeat")
+                return "[LOW_CONFIDENCE]"  # Special marker for orchestrator
+            
             return text
         except Exception as e:
             logger.warning(f"Whisper failed: {e}, trying fallback...")
