@@ -183,9 +183,9 @@ def clear_chat():
 
 
 # ============ Gradio UI ============
-with gr.Blocks(title="VoiceBot", theme=gr.themes.Soft()) as app:
+with gr.Blocks(title="VoiceGraph", theme=gr.themes.Soft()) as app:
     
-    gr.Markdown("# 🎙️ VoiceBot")
+    gr.Markdown("# 🎙️ VoiceGraph")
     gr.Markdown("*Voice assistant powered by Whisper + Groq + Edge TTS*")
     
     with gr.Tab("🎤 Voice"):

@@ -111,13 +111,13 @@ def clear_conversation():
 
 def create_app():
     with gr.Blocks(
-        title="VoiceBot",
+        title="VoiceGraph",
         theme=gr.themes.Soft(),
         css=".gradio-container { max-width: 700px !important; margin: auto; }"
     ) as app:
         
         # Header
-        gr.Markdown("# 🎙️ VoiceBot")
+        gr.Markdown("# 🎙️ VoiceGraph")
         gr.Markdown("*Voice assistant powered by Whisper, LangGraph & Edge TTS*")
         
         # Status indicator
@@ -148,7 +148,7 @@ def create_app():
             
             # Response audio player
             audio_output = gr.Audio(
-                label="VoiceBot Response",
+                label="VoiceGraph Response",
                 type="filepath",
                 autoplay=True 
             )
@@ -180,7 +180,7 @@ def create_app():
             text_submit = gr.Button("Send Text", variant="primary", size="lg")
             
             text_audio_output = gr.Audio(
-                label="VoiceBot Response",
+                label="VoiceGraph Response",
                 type="filepath",
                 autoplay=True
             )
@@ -217,7 +217,7 @@ def create_app():
         
         # Footer
         gr.Markdown("---")
-        gr.Markdown("*VoiceBot v1.0 • FastAPI + Gradio + Whisper + LangGraph + Edge TTS*")
+        gr.Markdown("*VoiceGraph v1.0 • FastAPI + Gradio + Whisper + LangGraph + Edge TTS*")
     
     return app
 
