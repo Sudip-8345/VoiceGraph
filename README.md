@@ -1,20 +1,20 @@
 # 🎙️ VoiceGraph
 
-A production-ready voice bot with human-like conversational AI, built with FastAPI, Streamlit, Whisper, LangGraph, and Edge TTS.
+A production-ready voice bot with human-like conversational AI, built with FastAPI, Gradio, Whisper, LangGraph, and Edge TTS.
 
 ## Features
 
 - **Speech-to-Text**: OpenAI Whisper (primary) with SpeechRecognition fallback
-- **LLM**: OpenRouter API with customizable models
+- **LLM**: Groq (primary) with Google Gemini fallback
 - **Text-to-Speech**: Microsoft Edge TTS (primary) with gTTS fallback
 - **Orchestration**: LangGraph for reliable pipeline management
 - **API**: FastAPI with async support and comprehensive error handling
-- **Frontend**: Streamlit web interface for easy interaction
+- **Frontend**: Gradio web interface for easy interaction
 
 ## Architecture
 
 ```
-Audio Input → STT (Whisper) → LangGraph → LLM (OpenRouter) → TTS (Edge TTS) → Audio Output
+Audio Input → STT (Whisper) → LangGraph → LLM (Groq/Gemini) → TTS (Edge TTS) → Audio Output
 ```
 
 ## Quick Start
@@ -56,10 +56,10 @@ API will be available at `http://localhost:8000`
 ### 4. Start the Frontend
 
 ```bash
-streamlit run app.py
+python app.py
 ```
 
-Frontend will be available at `http://localhost:8501`
+Frontend will be available at `http://localhost:7860`
 
 ## API Endpoints
 
@@ -122,8 +122,9 @@ print(response.json()["response_text"])
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `OPENROUTER_API_KEY` | Your OpenRouter API key | Required |
-| `OPENROUTER_MODEL` | LLM model to use | `meta-llama/llama-3.1-8b-instruct:free` |
+| `GROQ_API_KEY` | Your Groq API key | Required |
+| `GROQ_MODEL` | Groq model to use | `llama-3.3-70b-versatile` |
+| `GOOGLE_API_KEY` | Google Gemini API key (fallback) | Optional |
 | `TTS_VOICE` | Edge TTS voice | `en-US-AriaNeural` |
 | `TTS_RATE` | Speech rate | `+0%` |
 | `MAX_AUDIO_DURATION_SECONDS` | Max input audio length | `60` |
@@ -143,17 +144,26 @@ VoiceBot/
 ├── requirements.txt    # Python dependencies
 ├── config.py          # Configuration management
 ├── main.py            # FastAPI backend
-├── app.py             # Streamlit frontend
+├── app.py             # Gradio frontend
+├── Dockerfile         # Docker configuration
+├── docker-compose.yml # Docker Compose setup
 ├── modules/
 │   ├── __init__.py
 │   ├── stt.py         # Speech-to-Text
 │   ├── tts.py         # Text-to-Speech
 │   ├── llm.py         # LLM client
 │   └── orchestrator.py # LangGraph pipeline
-└── utils/
-    ├── __init__.py
-    ├── logger.py      # Logging utilities
-    └── audio.py       # Audio processing
+├── utils/
+│   ├── __init__.py
+│   ├── logger.py      # Logging utilities
+│   └── audio.py       # Audio processing
+├── WebApp/            # Hugging Face Spaces deployment
+│   ├── app.py
+│   ├── requirements.txt
+│   └── README.md
+└── .github/
+    └── workflows/
+        └── deploy-to-hf.yml  # CI/CD workflow
 ```
 
 ## Customization
@@ -174,9 +184,9 @@ Update `TTS_VOICE` in `.env` with your preferred voice.
 
 ### Use Different LLM Model
 
-Browse available models at [OpenRouter](https://openrouter.ai/models) and update `OPENROUTER_MODEL` in `.env`.
+Browse available models at [Groq](https://console.groq.com/docs/models) and update `GROQ_MODEL` in `.env`.
 
-## WhatsApp Integration
+## Future WhatsApp Integration
 
 The bot outputs MP3/OGG audio compatible with WhatsApp. For WhatsApp integration:
 
