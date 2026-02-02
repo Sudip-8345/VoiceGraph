@@ -2,7 +2,7 @@ import asyncio
 import io
 from utils.logger import get_logger
 from utils.audio import convert_to_format
-from config import get_settings
+from config import settings
 
 logger = get_logger(__name__)
 
@@ -10,7 +10,6 @@ logger = get_logger(__name__)
 async def synthesize_with_edge(text: str, voice: str = None, rate: str = None, volume: str = None) -> bytes:
     import edge_tts
     
-    settings = get_settings()
     voice = voice or settings.tts_voice
     rate = rate or settings.tts_rate
     volume = volume or settings.tts_volume

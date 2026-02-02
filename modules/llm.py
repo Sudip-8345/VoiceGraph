@@ -2,7 +2,7 @@ import os
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from utils.logger import get_logger
-from config import get_settings
+from config import settings
 
 logger = get_logger(__name__)
 
@@ -25,7 +25,6 @@ async def generate(message: str) -> str:
     if not message or not message.strip():
         raise ValueError("Message cannot be empty")
     
-    settings = get_settings()
     llm = ChatGroq(
         api_key=settings.groq_api_key,
         model=settings.groq_model,

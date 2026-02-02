@@ -137,3 +137,7 @@ async def process_text(text: str, output_format: str = "mp3") -> dict:
 def clear_conversation():
     llm.clear_history()
 
+
+async def cleanup():
+    logger.info("Cleaning up orchestrator resources...")
+

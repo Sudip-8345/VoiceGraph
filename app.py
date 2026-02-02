@@ -19,23 +19,40 @@ def send_audio_to_api(audio_path, output_format="mp3"):
         return None, "No audio recorded"
     
     try:
+        # First get the text response
         with open(audio_path, "rb") as f:
-            resp = requests.post(
+            text_resp = requests.post(
+                f"{API_URL}/api/voice/process-with-text",
+                files={"audio": ("audio.wav", f, "audio/wav")},
+                data={"output_format": output_format},
+                timeout=120
+            )
+        
+        if text_resp.status_code != 200:
+            error = text_resp.json().get("detail", "Unknown error")
+            return None, f"Error: {error}"
+        
+        text_data = text_resp.json()
+        user_text = text_data.get("transcribed_text", "")
+        bot_text = text_data.get("response_text", "")
+        
+        # Now get the audio response
+        with open(audio_path, "rb") as f:
+            audio_resp = requests.post(
                 f"{API_URL}/api/voice/process",
                 files={"audio": ("audio.wav", f, "audio/wav")},
                 data={"output_format": output_format},
                 timeout=120
             )
         
-        if resp.status_code == 200:
-            # Save response audio to temp file
+        if audio_resp.status_code == 200:
             temp = tempfile.NamedTemporaryFile(delete=False, suffix=f".{output_format}")
-            temp.write(resp.content)
+            temp.write(audio_resp.content)
             temp.close()
-            return temp.name, "Response ready"
+            chat_text = f"You: {user_text}\nBot: {bot_text}"
+            return temp.name, chat_text
         else:
-            error = resp.json().get("detail", "Unknown error")
-            return None, f"Error: {error}"
+            return None, f"Error getting audio"
             
     except requests.exceptions.ConnectionError:
         return None, "Cannot connect to API. Is the backend running?"
@@ -48,6 +65,18 @@ def send_text_to_api(text, output_format="mp3"):
         return None, "Please enter a message"
     
     try:
+        # Get text response first
+        text_resp = requests.post(
+            f"{API_URL}/api/text/chat-text",
+            json={"text": text.strip()},
+            timeout=120
+        )
+        
+        bot_text = ""
+        if text_resp.status_code == 200:
+            bot_text = text_resp.json().get("response_text", "")
+        
+        # Get audio response
         resp = requests.post(
             f"{API_URL}/api/text/chat",
             json={"text": text.strip(), "output_format": output_format},
@@ -58,7 +87,8 @@ def send_text_to_api(text, output_format="mp3"):
             temp = tempfile.NamedTemporaryFile(delete=False, suffix=f".{output_format}")
             temp.write(resp.content)
             temp.close()
-            return temp.name, f"You: {text}"
+            chat_text = f"You: {text}\nBot: {bot_text}"
+            return temp.name, chat_text
         else:
             error = resp.json().get("detail", "Unknown error")
             return None, f"Error: {error}"
